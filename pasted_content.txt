@@ -1,0 +1,336 @@
+### ブラウザベースのCSVプロセッサ仕様書
+
+以下の仕様書は、サーバーなしの完全ブラウザベースで動作するCSV処理システムを構築するためのガイドラインを提供します。このシステムは、RedmineのCSVファイル（課題やタイムログ）をアップロードし、ブラウザ内で処理し、結果をダウンロードする機能を持ちます。データはブラウザのローカルストレージ（localStorage）またはクライアントサイドデータベース（RxDBまたはPouchDB）で管理され、アップロードやダウンロードは手動またはRPAツール（UI-PathやPower Automate Desktop）で自動化可能です。さらに、処理設定に基づくPowerShellスクリプトを生成し、ローカルで実行できるオプションも含まれます。
+
+#### 主なポイント
+- **サーバー不要**: すべての処理はブラウザ内で完結し、サーバー接続は不要です。
+- **データ管理**: localStorageまたはRxDB/PouchDBを使用してデータをブラウザ内に保存。
+- **CSV処理**: PapaParseライブラリでCSVのインポートとエクスポートを処理。
+- **自動化対応**: UI-PathやPower Automate Desktopでアップロード/ダウンロードを自動化可能。
+- **PowerShellスクリプト**: 処理設定に基づくスクリプトを生成し、ダウンロード可能。
+
+#### システム概要
+このシステムは、ユーザーがCSVファイルをブラウザにアップロードし、フィルタリングやソーティングなどの処理を行い、結果をCSVとしてダウンロードできるツールです。データはブラウザ内で管理され、サーバー接続は不要です。オプションとして、処理設定をPowerShellスクリプトとしてエクスポートし、ローカルで実行できます。
+
+#### 基本機能
+- **CSVアップロード**: ユーザーはローカルのCSVファイルを選択し、ブラウザにインポート。
+- **データ処理**: フィルタリングやソーティングなどの操作をブラウザ内で実行。
+- **データ保存**: 処理データをlocalStorageまたはクライアントサイドデータベースに保存。
+- **CSVダウンロード**: 処理結果をCSVファイルとしてエクスポート。
+- **PowerShellスクリプト生成**: 処理設定をPowerShellスクリプトとして生成し、ダウンロード可能。
+
+#### 推奨技術
+- **PapaParse**: CSVファイルのパースと生成に使用（[PapaParse](https://www.papaparse.com/)）。
+- **RxDB/PouchDB**: 複雑なデータ管理用のクライアントサイドデータベース（[RxDB](https://rxdb.info/)、[PouchDB](https://pouchdb.com/)）。
+- **localStorage**: 簡単な設定や内部変数の保存（[MDN localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)）。
+
+#### 次のステップ
+以下の仕様書を基に、基本機能（アップロード、処理、ダウンロード）の実装から開始してください。必要に応じて、PowerShellスクリプト生成機能を後で追加できます。
+
+---
+
+### 詳細仕様書
+
+#### 1. システム概要
+このシステムは、RedmineのCSVファイル（課題やタイムログ）を処理するためのブラウザベースのアプリケーションです。ユーザーはCSVファイルをアップロードし、ブラウザ内でデータを処理（例: フィルタリング、ソーティング）し、結果をCSVとしてダウンロードできます。すべての処理はクライアントサイドで行われ、サーバーは不要です。データはブラウザのローカルストレージ（localStorage）またはクライアントサイドデータベース（RxDBまたはPouchDB）で管理されます。オプションとして、処理設定に基づくPowerShellスクリプトを生成し、ローカルで実行可能です。アップロードやダウンロードは手動またはRPAツール（UI-PathやPower Automate Desktop）で自動化できます。
+
+#### 2. 機能要件
+2.1 **CSVのアップロード**
+- ユーザーがローカルのCSVファイルを選択し、ブラウザにアップロード。
+- アップロードされたCSVをJavaScriptで解析し、JSON形式に変換。
+- 例: Redmineの課題CSV（フィールド: ID、ステータス、担当者など）をインポート。
+
+2.2 **データ処理**
+- ユーザーがフィルタリング（例: ステータスが「オープン」の課題のみ）、ソーティング（例: 日付順）、その他の操作を実行。
+- 処理結果をブラウザ内のデータベースに保存。
+
+2.3 **データ管理**
+- データをlocalStorage（簡単な設定用）またはRxDB/PouchDB（複雑なデータ用）で管理。
+- データの永続化をサポート（ブラウザを閉じても保持可能、ただしオプション）。
+
+2.4 **CSVのダウンロード**
+- 処理されたデータをCSV形式に変換し、ダウンロードリンクを提供。
+- 例: フィルタリング後の課題リストをCSVとしてエクスポート。
+
+2.5 **PowerShellスクリプトの生成（オプション）**
+- ユーザーの処理設定（例: フィルタリング条件）に基づくPowerShellスクリプトを生成。
+- スクリプトはローカルで実行可能で、同一の処理をオフラインで再現。
+- 例: `Import-Csv -Path "input.csv" | Where-Object { $_.Status -eq "Open" } | Export-Csv -Path "output.csv" -NoTypeInformation`
+
+2.6 **エラーハンドリング**
+- アップロードファイルが有効なCSVか検証。
+- パース、処理、ダウンロード中のエラーを検知し、ユーザーに分かりやすいメッセージを表示。
+
+#### 3. 非機能要件
+3.1 **パフォーマンス**
+- 10MB程度のCSVファイルを処理可能。
+- 処理速度はユーザー体験を損なわない程度（数秒以内を目標）。
+
+3.2 **セキュリティ**
+- データはブラウザ内に保存されるため、機密データの取り扱いに注意。
+- 必要に応じて、データを暗号化（例: CryptoJSライブラリ）。
+- ブラウザのストレージ制限（通常50-100MB）に留意。
+
+3.3 **使いやすさ**
+- UIは直感的で、初心者でも操作可能。
+- 各操作（アップロード、処理、ダウンロード）で明確なフィードバックを提供。
+
+3.4 **互換性**
+- Chrome、Firefox、Safari、Edgeの最新バージョンで動作。
+- ローカルファイル（file://）からの実行時のセキュリティ制限に対応。
+
+#### 4. 技術スタック
+4.1 **フロントエンド**
+- **HTML5**: ページ構造。
+- **CSS3**: スタイリング（例: Tailwind CSSをCDN経由で使用可能）。
+- **JavaScript (ES6+)**: ロジック実装。
+
+4.2 **ライブラリ**
+- **PapaParse**: CSVファイルのパースと生成（[PapaParse](https://www.papaparse.com/)）。
+- **RxDB**または**PouchDB**: クライアントサイドデータベース（[RxDB](https://rxdb.info/)、[PouchDB](https://pouchdb.com/)）。
+- **localStorage**: 設定や内部変数の保存（[MDN localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)）。
+
+4.3 **ブラウザサポート**
+- 最新のChrome、Firefox、Safari、Edge。
+- ローカルファイル（file://）実行時の制限を考慮し、必要に応じて簡易ローカルサーバー（例: VS CodeのLive Server拡張機能）を使用。
+
+#### 5. データ管理
+5.1 **データストレージ**
+- **メインのデータ**: RxDBまたはPouchDBを使用し、JSON形式のデータをドキュメントとして保存。
+  - 例: Redmineの課題データを `{ id: "123", status: "Open", assignee: "User1" }` の形式で保存。
+- **設定や内部変数**: localStorageを使用し、キー・バリュー形式で保存。
+  - 例: `{ "filterStatus": "Open" }` を保存。
+
+5.2 **データ操作**
+- **メインのデータ**: CRUD操作（作成、読み取り、更新、削除）とクエリ（例: フィルタリング、ソーティング）をサポート。
+- **設定**: localStorageの簡単なget/set操作。
+
+5.3 **ストレージ制限**
+- localStorage: 通常5-10MB。
+- RxDB/PouchDB: IndexedDB依存（通常50-100MB、ブラウザによる）。
+- 大規模データの場合は、ユーザーにストレージクリアを促すメッセージを表示。
+
+#### 6. ユーザーインターフェース
+6.1 **アップロードセクション**
+- ファイル入力要素（`<input type="file">`）でCSVを選択。
+- アップロードボタンでパースを開始。
+
+6.2 **処理セクション**
+- フォームで処理オプションを指定（例: ステータスフィルタ、ソート順）。
+- 処理実行ボタン。
+
+6.3 **ダウンロードセクション**
+- 処理結果をCSVとしてダウンロードするボタン/リンク。
+
+6.4 **PowerShellスクリプト生成（オプション）**
+- 処理設定に基づくPowerShellスクリプトを生成。
+- スクリプトをダウンロードするボタン。
+
+#### 7. 実装計画
+7.1 **プロジェクトセットアップ**
+- HTMLファイル（index.html）を作成。
+- CSSで基本的なスタイリング（例: Tailwind CSS）。
+- JavaScriptファイルでロジックを実装。
+
+7.2 **ライブラリ統合**
+- PapaParseをCDN経由で追加。
+- RxDBまたはPouchDBをCDNまたはnpm経由で追加。
+- localStorageはブラウザ標準機能として使用。
+
+7.3 **アップロード機能**
+- ファイル入力にイベントリスナーを追加。
+- PapaParseでCSVをJSONにパース。
+
+7.4 **データストレージ**
+- RxDB/PouchDBを初期化し、スキーマを定義（例: Redmineの課題フィールド）。
+- パースされたJSONデータをデータベースに挿入。
+
+7.5 **データ処理**
+- UIで処理オプション（フィルタ、ソート）を収集。
+- データベースのクエリでデータを処理。
+
+7.6 **ダウンロード機能**
+- データベースから処理済みデータを取得。
+- PapaParseでJSONをCSVに変換。
+- BlobとURL.createObjectURLでダウンロードリンクを生成。
+
+7.7 **PowerShellスクリプト生成（オプション）**
+- 処理オプションに基づくPowerShellコードを生成。
+- Blobで.ps1ファイルを作成し、ダウンロードリンクを提供。
+
+7.8 **エラーハンドリング**
+- 無効なCSVファイルの検出。
+- パースエラーやストレージ制限超過時のメッセージ表示。
+
+7.9 **テスト**
+- サンプルCSV（Redmineの課題/タイムログ）でテスト。
+- アップロード、パース、処理、ダウンロードの各ステップを確認。
+- 複数ブラウザ（Chrome、Firefox）で互換性テスト。
+
+7.10 **ドキュメント**
+- ユーザー向けガイド（操作手順、エラー対処法）。
+- コードコメントと開発者向けドキュメント。
+
+#### 8. セキュリティと制限
+8.1 **セキュリティ**
+- データはブラウザ内に保存されるため、機密データは暗号化を検討（例: CryptoJS）。
+- ローカルファイル（file://）実行時は、同一オリジンポリシーにより一部機能が制限される場合がある。
+
+8.2 **ストレージ制限**
+- localStorage: 5-10MB。
+- RxDB/PouchDB: IndexedDBの制限（50-100MB）。
+- 制限超過時は、ユーザーにキャッシュクリアを促す。
+
+8.3 **RPAツール**
+- UI-PathやPower Automate Desktopで、ファイル選択、アップロード、ダウンロードを自動化可能。
+- 例: ブラウザを開き、ファイル選択ダイアログを操作し、ダウンロードを保存。
+
+#### 9. サンプル実装
+以下は、基本機能（アップロード、処理、ダウンロード）を実装したサンプルコードです。このコードは、PapaParseとlocalStorageを使用し、シンプルなフィルタリング機能を提供します。RxDB/PouchDBの統合は後で追加可能です。
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>CSVプロセッサ</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin-bottom: 20px; }
+        button { padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="section">
+        <h2>CSVアップロード</h2>
+        <input type="file" id="csvFile" accept=".csv">
+        <button onclick="uploadCSV()">アップロード</button>
+    </div>
+    <div class="section">
+        <h2>処理オプション</h2>
+        <label>ステータスフィルタ: </label>
+        <input type="text" id="statusFilter" placeholder="例: Open">
+        <button onclick="processData()">処理</button>
+    </div>
+    <div class="section">
+        <h2>ダウンロード</h2>
+        <button onclick="downloadCSV()">CSVダウンロード</button>
+        <button onclick="generatePowerShell()">PowerShellスクリプト生成</button>
+    </div>
+    <div id="error" style="color: red;"></div>
+
+    <script>
+        let data = [];
+
+        function uploadCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                showError('ファイルを選択してください');
+                return;
+            }
+            Papa.parse(file, {
+                header: true,
+                complete: function(results) {
+                    data = results.data;
+                    localStorage.setItem('csvData', JSON.stringify(data));
+                    showError('');
+                    alert('CSVがアップロードされました');
+                },
+                error: function(error) {
+                    showError('CSVパースエラー: ' + error.message);
+                }
+            });
+        }
+
+        function processData() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            if (!data.length && !localStorage.getItem('csvData')) {
+                showError('データがありません。CSVをアップロードしてください');
+                return;
+            }
+            if (!data.length) {
+                data = JSON.parse(localStorage.getItem('csvData'));
+            }
+            const filteredData = statusFilter
+                ? data.filter(row => row.Status === statusFilter)
+                : data;
+            localStorage.setItem('processedData', JSON.stringify(filteredData));
+            showError('');
+            alert('データが処理されました');
+        }
+
+        function downloadCSV() {
+            const processedData = JSON.parse(localStorage.getItem('processedData') || '[]');
+            if (!processedData.length) {
+                showError('処理済みデータがありません。処理を実行してください');
+                return;
+            }
+            const csv = Papa.unparse(processedData);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'processed.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function generatePowerShell() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            if (!statusFilter) {
+                showError('フィルタ条件を指定してください');
+                return;
+            }
+            const script = `
+param (
+    [string]$csvPath
+)
+$data = Import-Csv -Path $csvPath
+$filteredData = $data | Where-Object { $_.Status -eq "${statusFilter}" }
+$filteredData | Export-Csv -Path "output.csv" -NoTypeInformation
+            `;
+            const blob = new Blob([script], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'process.ps1';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+        }
+    </script>
+</body>
+</html>
+```
+
+#### 10. 比較表: データストレージオプション
+| **項目**               | **localStorage**                     | **RxDB**                           | **PouchDB**                        |
+|-----------------------|--------------------------------------|------------------------------------|------------------------------------|
+| **データ形式**         | キー・バリュー                       | ドキュメント指向（NoSQL）           | ドキュメント指向（NoSQL）           |
+| **複雑なクエリ**       | 不可                                 | 可能（リアルタイム対応）             | 可能（MapReduce対応）               |
+| **ストレージ容量**     | 5-10MB                               | 50-100MB（IndexedDB依存）           | 50-100MB（IndexedDB依存）           |
+| **学習コスト**         | 低                                   | 中（RxJS知識が必要）                 | 中（CouchDB知識が役立つ）           |
+| **用途**               | 設定や簡単なデータ                   | 複雑なデータ管理                   | 複雑なデータ管理                   |
+
+#### 11. 推奨事項
+- **初期実装**: 上記のサンプルコードを基に、localStorageとPapaParseで基本機能（アップロード、処理、ダウンロード）を実装。
+- **データベース統合**: 複雑なデータ操作が必要な場合、RxDB（リアルタイム対応）またはPouchDB（シンプルなドキュメント管理）を追加。
+- **RPA自動化**: UI-PathやPower Automate Desktopで、ファイル選択やダウンロードを自動化するワークフローを構築。
+- **PowerShellスクリプト**: オプションとして、処理設定をPowerShellスクリプトに変換する機能を追加。
+
+#### 12. 結論
+この仕様書は、サーバーなしのブラウザベースのCSV処理システムを構築するための包括的なガイドラインを提供します。基本機能から実装を開始し、必要に応じてRxDB/PouchDBやPowerShellスクリプト生成を追加することで、ユーザーの要件を満たすシステムを構築できます。サンプルコードは初期実装の参考として使用可能です。
+
+---
+
+### Key Citations
+- [PapaParse - CSV Parsing Library](https://www.papaparse.com/)
+- [RxDB - JavaScript Database](https://rxdb.info/)
+- [PouchDB - JavaScript Database](https://pouchdb.com/)
+- [MDN Web Docs - localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
+- [MDN Web Docs - Client-side Storage](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Client-side_APIs/Client-side_storage)

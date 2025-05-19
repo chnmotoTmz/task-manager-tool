@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タスク管理ツール</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-100">
+    <div class="flex flex-col h-screen">
+        <!-- ヘッダー -->
+        <header class="bg-blue-600 text-white p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold">タスク管理ツール</h1>
+                <div>
+                    <button id="upload-button" class="bg-white text-blue-600 px-4 py-2 rounded mr-2">
+                        CSVアップロード
+                    </button>
+                    <button id="download-button" class="bg-white text-blue-600 px-4 py-2 rounded">
+                        CSVダウンロード
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- メインコンテンツ -->
+        <div class="flex flex-1 overflow-hidden">
+            <!-- サイドバー -->
+            <nav class="w-64 bg-gray-800 text-white p-4">
+                <ul>
+                    <li class="mb-2">
+                        <a href="#" class="block p-2 rounded hover:bg-gray-700 active-nav" data-target="tasks-section">
+                            タスク一覧
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="block p-2 rounded hover:bg-gray-700" data-target="log-section">
+                            時間記録
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="block p-2 rounded hover:bg-gray-700" data-target="report-section">
+                            レポート
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="block p-2 rounded hover:bg-gray-700" data-target="settings-section">
+                            設定
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <!-- メインコンテンツエリア -->
+            <main class="flex-1 p-6 overflow-auto">
+                <!-- タスク一覧セクション -->
+                <section id="tasks-section" class="content-section">
+                    <h2 class="text-xl font-bold mb-4">タスク一覧</h2>
+                    
+                    <!-- フィルター -->
+                    <div class="bg-white p-4 rounded shadow mb-4">
+                        <h3 class="font-bold mb-2">フィルター</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">ステータス</label>
+                                <select id="status-filter" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="">すべて</option>
+                                    <option value="未着手">未着手</option>
+                                    <option value="進行中">進行中</option>
+                                    <option value="完了">完了</option>
+                                    <option value="保留">保留</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">優先度</label>
+                                <select id="priority-filter" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="">すべて</option>
+                                    <option value="高">高</option>
+                                    <option value="中">中</option>
+                                    <option value="低">低</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end">
+                                <button id="filter-button" class="bg-blue-600 text-white px-4 py-2 rounded">
+                                    フィルター適用
+                                </button>
+                                <button id="export-ps-button" class="ml-2 bg-green-600 text-white px-4 py-2 rounded">
+                                    PowerShellスクリプト生成
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- タスク一覧テーブル -->
+                    <div class="bg-white rounded shadow overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">題名</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">優先度</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">期日</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">進捗率</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tasks-table-body" class="bg-white divide-y divide-gray-200">
+                                    <!-- タスクデータがここに動的に挿入されます -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- 新規タスク追加ボタン -->
+                    <div class="mt-4">
+                        <button id="add-task-button" class="bg-blue-600 text-white px-4 py-2 rounded">
+                            新規タスクを追加
+                        </button>
+                    </div>
+                </section>
+
+                <!-- 時間記録セクション -->
+                <section id="log-section" class="content-section hidden">
+                    <h2 class="text-xl font-bold mb-4">時間記録</h2>
+                    
+                    <div class="bg-white p-6 rounded shadow">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">タスクを選択</label>
+                            <select id="log-task-id" class="w-full p-2 border rounded">
+                                <!-- タスクが動的に挿入されます -->
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">作業時間 (時間)</label>
+                            <input type="number" id="log-hours" step="0.5" min="0.5" max="24" class="w-full p-2 border rounded">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">コメント</label>
+                            <textarea id="log-comment" rows="3" class="w-full p-2 border rounded"></textarea>
+                        </div>
+                        
+                        <button id="save-log-button" class="bg-blue-600 text-white px-4 py-2 rounded">
+                            記録を保存
+                        </button>
+                        
+                        <div class="mt-6">
+                            <h3 class="text-lg font-bold mb-2">記録履歴</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日付</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">タスク</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">時間</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">コメント</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="log-table-body" class="bg-white divide-y divide-gray-200">
+                                        <!-- 記録データがここに動的に挿入されます -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- レポートセクション -->
+                <section id="report-section" class="content-section hidden">
+                    <h2 class="text-xl font-bold mb-4">レポート</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 進捗状況 -->
+                        <div class="bg-white p-6 rounded shadow">
+                            <h3 class="text-lg font-bold mb-4">進捗状況</h3>
+                            <div id="progress-chart" class="h-64">
+                                <!-- チャートがここに表示されます -->
+                                <p class="text-gray-500 text-center py-16">データがありません</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 作業時間の集計 -->
+                        <div class="bg-white p-6 rounded shadow">
+                            <h3 class="text-lg font-bold mb-4">作業時間の集計</h3>
+                            <div id="hours-chart" class="h-64">
+                                <!-- チャートがここに表示されます -->
+                                <p class="text-gray-500 text-center py-16">データがありません</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 今後のタスク -->
+                        <div class="bg-white p-6 rounded shadow md:col-span-2">
+                            <h3 class="text-lg font-bold mb-4">今後のタスク</h3>
+                            <div id="upcoming-tasks">
+                                <!-- タスクが動的に挿入されます -->
+                                <p class="text-gray-500 text-center py-8">タスクがありません</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- 設定セクション -->
+                <section id="settings-section" class="content-section hidden">
+                    <h2 class="text-xl font-bold mb-4">設定</h2>
+                    
+                    <div class="bg-white p-6 rounded shadow">
+                        <h3 class="text-lg font-bold mb-3">CSVファイル管理</h3>
+                        
+                        <div class="mb-6">
+                            <h4 class="font-medium mb-2">CSVファイルのアップロード</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">タスクデータ (issues.csv)</label>
+                                    <input type="file" id="issues-csv-file" accept=".csv" class="block w-full text-sm text-gray-500
+                                        file:mr-4 file:py-2 file:px-4
+                                        file:rounded-md file:border-0
+                                        file:text-sm file:font-semibold
+                                        file:bg-blue-50 file:text-blue-700
+                                        hover:file:bg-blue-100">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">作業ログ (timelog.csv)</label>
+                                    <input type="file" id="timelog-csv-file" accept=".csv" class="block w-full text-sm text-gray-500
+                                        file:mr-4 file:py-2 file:px-4
+                                        file:rounded-md file:border-0
+                                        file:text-sm file:font-semibold
+                                        file:bg-blue-50 file:text-blue-700
+                                        hover:file:bg-blue-100">
+                                </div>
+                            </div>
+                            <button id="upload-csv-button" class="bg-blue-600 text-white px-4 py-2 rounded">
+                                アップロードして適用
+                            </button>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="font-medium mb-2">CSVファイルのダウンロード</h4>
+                            <div class="flex space-x-4">
+                                <button id="download-issues-button" class="bg-green-600 text-white px-4 py-2 rounded">
+                                    タスクデータをダウンロード (issues.csv)
+                                </button>
+                                <button id="download-timelog-button" class="bg-green-600 text-white px-4 py-2 rounded">
+                                    作業ログをダウンロード (timelog.csv)
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 border rounded bg-gray-50">
+                            <h4 class="font-bold mb-2">データのリセット</h4>
+                            <p class="text-sm text-gray-600 mb-4">すべてのデータをリセットします。この操作は元に戻せません。</p>
+                            <button id="reset-data-button" class="bg-red-600 text-white px-4 py-2 rounded">
+                                すべてのデータをリセット
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded shadow mt-6">
+                        <h3 class="text-lg font-bold mb-3">PowerShellスクリプト生成</h3>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">スクリプトの種類</label>
+                            <select id="script-type" class="w-full p-2 border rounded">
+                                <option value="filter">フィルタースクリプト</option>
+                                <option value="sort">ソートスクリプト</option>
+                                <option value="report">レポートスクリプト</option>
+                            </select>
+                        </div>
+                        
+                        <div id="filter-options" class="script-options">
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ステータスでフィルター</label>
+                                <select id="filter-status" class="w-full p-2 border rounded">
+                                    <option value="">選択してください</option>
+                                    <option value="未着手">未着手</option>
+                                    <option value="進行中">進行中</option>
+                                    <option value="完了">完了</option>
+                                    <option value="保留">保留</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">優先度でフィルター</label>
+                                <select id="filter-priority" class="w-full p-2 border rounded">
+                                    <option value="">選択してください</option>
+                                    <option value="高">高</option>
+                                    <option value="中">中</option>
+                                    <option value="低">低</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button id="generate-script-button" class="bg-purple-600 text-white px-4 py-2 rounded">
+                            スクリプトを生成
+                        </button>
+                    </div>
+                </section>
+            </main>
+        </div>
+        
+        <!-- フッター -->
+        <footer class="bg-gray-800 text-white p-4">
+            <div class="container mx-auto text-center">
+                <p>タスク管理ツール &copy; 2025</p>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- タスク編集モーダル -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="text-xl font-bold mb-4">タスク編集</h2>
+            <form id="task-form">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">題名</label>
+                    <input type="text" id="task-title" class="w-full p-2 border rounded">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ステータス</label>
+                    <select id="task-status" class="w-full p-2 border rounded">
+                        <option value="未着手">未着手</option>
+                        <option value="進行中">進行中</option>
+                        <option value="完了">完了</option>
+                        <option value="保留">保留</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">優先度</label>
+                    <select id="task-priority" class="w-full p-2 border rounded">
+                        <option value="高">高</option>
+                        <option value="中">中</option>
+                        <option value="低">低</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">期日</label>
+                    <input type="date" id="task-due-date" class="w-full p-2 border rounded">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">進捗率</label>
+                    <input type="number" id="task-progress" min="0" max="100" class="w-full p-2 border rounded">
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" id="cancel-task-button" class="bg-gray-500 text-white px-4 py-2 rounded">
+                        キャンセル
+                    </button>
+                    <button type="submit" id="save-task-button" class="bg-blue-600 text-white px-4 py-2 rounded">
+                        保存
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- エラーメッセージモーダル -->
+    <div id="error-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="text-xl font-bold mb-4">エラー</h2>
+            <p id="error-message" class="text-red-500"></p>
+            <button id="close-error-button" class="bg-red-600 text-white px-4 py-2 rounded mt-4">
+                閉じる
+            </button>
+        </div>
+    </div>
+    
+    <!-- 成功メッセージモーダル -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="text-xl font-bold mb-4">成功</h2>
+            <p id="success-message" class="text-green-500"></p>
+            <button id="close-success-button" class="bg-green-600 text-white px-4 py-2 rounded mt-4">
+                閉じる
+            </button>
+        </div>
+    </div>
+    
+    <!-- スクリプト生成モーダル -->
+    <div id="script-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="text-xl font-bold mb-4">生成されたスクリプト</h2>
+            <textarea id="script-content" class="w-full h-64 p-2 border rounded mb-4" readonly></textarea>
+            <button id="download-script-button" class="bg-purple-600 text-white px-4 py-2 rounded">
+                スクリプトをダウンロード
+            </button>
+        </div>
+    </div>
+    
+    <script src="js/data-handler.js"></script>
+    <script src="js/ui-handler.js"></script>
+</body>
+</html>
