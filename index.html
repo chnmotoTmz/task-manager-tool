@@ -99,13 +99,21 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">題名</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">優先度</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">期日</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">進捗率</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="#" data-sort-key="#">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="題名" data-sort-key="題名">題名</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="プロジェクト" data-sort-key="プロジェクト">プロジェクト</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="トラッカー" data-sort-key="トラッカー">トラッカー</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="ステータス" data-sort-key="ステータス">ステータス</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="優先度" data-sort-key="優先度">優先度</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="担当者" data-sort-key="担当者">担当者</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="作成者" data-sort-key="作成者">作成者</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="開始日" data-sort-key="開始日">開始日</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="期日" data-sort-key="期日">期日</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="予定工数" data-sort-key="予定工数">予定工数</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="進捗率" data-sort-key="進捗率">進捗率</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="作成日" data-sort-key="作成日">作成日</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" data-column-key="更新日" data-sort-key="更新日">更新日</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-column-key="操作">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tasks-table-body" class="bg-white divide-y divide-gray-200">
@@ -175,20 +183,20 @@
                     <h2 class="text-xl font-bold mb-4">レポート</h2>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- 進捗状況 -->
+                        <!-- ステータスチャート -->
                         <div class="bg-white p-6 rounded shadow">
-                            <h3 class="text-lg font-bold mb-4">進捗状況</h3>
-                            <div id="progress-chart" class="h-64">
-                                <!-- チャートがここに表示されます -->
+                            <h3 class="text-lg font-bold mb-4">タスクステータス</h3>
+                            <div id="status-chart-container">
+                                <!-- ステータスチャートがここに表示されます -->
                                 <p class="text-gray-500 text-center py-16">データがありません</p>
                             </div>
                         </div>
                         
-                        <!-- 作業時間の集計 -->
+                        <!-- 優先度チャート -->
                         <div class="bg-white p-6 rounded shadow">
-                            <h3 class="text-lg font-bold mb-4">作業時間の集計</h3>
-                            <div id="hours-chart" class="h-64">
-                                <!-- チャートがここに表示されます -->
+                            <h3 class="text-lg font-bold mb-4">タスク優先度</h3>
+                            <div id="priority-chart-container">
+                                <!-- 優先度チャートがここに表示されます -->
                                 <p class="text-gray-500 text-center py-16">データがありません</p>
                             </div>
                         </div>
@@ -199,6 +207,15 @@
                             <div id="upcoming-tasks">
                                 <!-- タスクが動的に挿入されます -->
                                 <p class="text-gray-500 text-center py-8">タスクがありません</p>
+                            </div>
+                        </div>
+
+                        <!-- 作業時間の概要 -->
+                        <div class="bg-white p-6 rounded shadow md:col-span-2">
+                            <h3 class="text-lg font-bold mb-4">作業時間の概要</h3>
+                            <div id="time-summary-container">
+                                <!-- Time summary will be rendered here -->
+                                <p class="text-gray-500 text-center py-8">データがありません</p>
                             </div>
                         </div>
                     </div>
@@ -270,7 +287,7 @@
                             </select>
                         </div>
                         
-                        <div id="filter-options" class="script-options">
+                        <div id="filter-options" class="script-options mb-4">
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">ステータスでフィルター</label>
                                 <select id="filter-status" class="w-full p-2 border rounded">
@@ -291,9 +308,36 @@
                                 </select>
                             </div>
                         </div>
+
+                        <div id="sort-options" class="script-options mb-4 hidden">
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ソートするフィールド</label>
+                                <select id="sort-field" class="w-full p-2 border rounded">
+                                    <!-- Options will be populated by JS -->
+                                    <option value="優先度">優先度</option> 
+                                    <option value="期日">期日</option>
+                                    <option value="#">ID</option>
+                                    <option value="題名">題名</option>
+                                    <option value="ステータス">ステータス</option>
+                                    <option value="進捗率">進捗率</option>
+                                    <option value="作成日">作成日</option>
+                                    <option value="更新日">更新日</option>
+                                </select>
+                            </div>
+                        </div>
                         
                         <button id="generate-script-button" class="bg-purple-600 text-white px-4 py-2 rounded">
                             スクリプトを生成
+                        </button>
+                    </div>
+
+                    <div class="bg-white p-6 rounded shadow mt-6">
+                        <h3 class="text-lg font-bold mb-3">列の表示設定</h3>
+                        <div id="column-visibility-settings" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+                            <!-- Checkboxes will be populated by JS -->
+                        </div>
+                        <button id="save-column-settings-button" class="bg-blue-600 text-white px-4 py-2 rounded">
+                            表示設定を保存
                         </button>
                     </div>
                 </section>
@@ -309,45 +353,75 @@
     </div>
     
     <!-- タスク編集モーダル -->
-    <div id="task-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 class="text-xl font-bold mb-4">タスク編集</h2>
+    <div id="task-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl mx-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="task-modal-title" class="text-xl font-semibold text-gray-800">タスク編集</h2>
+                <button id="task-modal-close-icon" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
             <form id="task-form">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">題名</label>
-                    <input type="text" id="task-title" class="w-full p-2 border rounded">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="task-title">題名</label>
+                        <input type="text" id="task-title" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="task-status">ステータス</label>
+                        <select id="task-status" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="未着手">未着手</option>
+                            <option value="進行中">進行中</option>
+                            <option value="完了">完了</option>
+                            <option value="保留">保留</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="task-priority">優先度</label>
+                        <select id="task-priority" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="高">高</option>
+                            <option value="中">中</option>
+                            <option value="低">低</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="task-due-date">期日</label>
+                        <input type="date" id="task-due-date" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="task-progress">進捗率 (%)</label>
+                        <input type="number" id="task-progress" min="0" max="100" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="task-project">プロジェクト</label>
+                        <input type="text" id="task-project" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="task-tracker">トラッカー</label>
+                        <input type="text" id="task-tracker" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="task-assignee">担当者</label>
+                        <input type="text" id="task-assignee" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="task-creator">作成者</label>
+                        <input type="text" id="task-creator" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="task-start-date">開始日</label>
+                        <input type="date" id="task-start-date" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="task-estimated-hours">予定工数 (時間)</label>
+                        <input type="number" id="task-estimated-hours" step="0.5" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">ステータス</label>
-                    <select id="task-status" class="w-full p-2 border rounded">
-                        <option value="未着手">未着手</option>
-                        <option value="進行中">進行中</option>
-                        <option value="完了">完了</option>
-                        <option value="保留">保留</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">優先度</label>
-                    <select id="task-priority" class="w-full p-2 border rounded">
-                        <option value="高">高</option>
-                        <option value="中">中</option>
-                        <option value="低">低</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">期日</label>
-                    <input type="date" id="task-due-date" class="w-full p-2 border rounded">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">進捗率</label>
-                    <input type="number" id="task-progress" min="0" max="100" class="w-full p-2 border rounded">
-                </div>
-                <div class="flex justify-end space-x-2">
-                    <button type="button" id="cancel-task-button" class="bg-gray-500 text-white px-4 py-2 rounded">
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" id="cancel-task-button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md border border-gray-300">
                         キャンセル
                     </button>
-                    <button type="submit" id="save-task-button" class="bg-blue-600 text-white px-4 py-2 rounded">
+                    <button type="submit" id="save-task-button" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
                         保存
                     </button>
                 </div>
@@ -356,38 +430,56 @@
     </div>
     
     <!-- エラーメッセージモーダル -->
-    <div id="error-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 class="text-xl font-bold mb-4">エラー</h2>
-            <p id="error-message" class="text-red-500"></p>
-            <button id="close-error-button" class="bg-red-600 text-white px-4 py-2 rounded mt-4">
-                閉じる
-            </button>
+    <div id="error-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm mx-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-red-600">エラー</h2>
+                <button id="error-modal-close-icon" class="text-gray-400 hover:text-gray-600">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <p id="error-message" class="text-gray-700 mb-6"></p>
+            <div class="flex justify-end">
+                <button id="close-error-button" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md">
+                    閉じる
+                </button>
+            </div>
         </div>
     </div>
     
     <!-- 成功メッセージモーダル -->
-    <div id="success-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 class="text-xl font-bold mb-4">成功</h2>
-            <p id="success-message" class="text-green-500"></p>
-            <button id="close-success-button" class="bg-green-600 text-white px-4 py-2 rounded mt-4">
-                閉じる
-            </button>
+    <div id="success-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm mx-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-green-600">成功</h2>
+                <button id="success-modal-close-icon" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <p id="success-message" class="text-gray-700 mb-6"></p>
+            <div class="flex justify-end">
+                <button id="close-success-button" class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md">
+                    閉じる
+                </button>
+            </div>
         </div>
     </div>
     
     <!-- スクリプト生成モーダル -->
-    <div id="script-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 class="text-xl font-bold mb-4">生成されたスクリプト</h2>
-            <textarea id="script-content" class="w-full h-64 p-2 border rounded mb-4" readonly></textarea>
-            <button id="download-script-button" class="bg-purple-600 text-white px-4 py-2 rounded">
-                スクリプトをダウンロード
-            </button>
+    <div id="script-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg mx-auto">
+             <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-800">生成されたスクリプト</h2>
+                <button id="script-modal-close-icon" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <textarea id="script-content" class="w-full h-64 p-2 border border-gray-300 rounded-md mb-4 focus:ring-blue-500 focus:border-blue-500" readonly></textarea>
+            <div class="flex justify-end">
+                <button id="download-script-button" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md">
+                    スクリプトをダウンロード
+                </button>
+            </div>
         </div>
     </div>
     
