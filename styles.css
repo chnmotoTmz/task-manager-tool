@@ -1,73 +1,8 @@
 /* カスタムスタイル */
 
-/* モーダルスタイル */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-}
-
-.modal-content {
-    position: relative;
-    background-color: white;
-    margin: 10% auto;
-    padding: 20px;
-    width: 90%;
-    max-width: 600px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.close-modal {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #6b7280;
-}
-
-/* テーブルスタイル */
-.table-header {
-    background-color: #f3f4f6;
-}
-
-.table-row:hover {
-    background-color: #f3f4f6;
-}
-
-/* フォームスタイル */
-.form-input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 16px;
-    border: 1px solid #e5e7eb;
-    border-radius: 4px;
-}
-
-/* ボタンスタイル */
-.primary-button {
-    background-color: #3b82f6;
-    color: white;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.primary-button:hover {
-    background-color: #2563eb;
-}
-
 /* チャートコンテナスタイル */
+/* Kept in case a charting library that needs specific container dimensions is added. */
+/* Currently, report charts are simple HTML/Tailwind representations. */
 .chart-container {
     width: 100%;
     height: 300px;
@@ -89,84 +24,16 @@
     100% { transform: rotate(360deg); }
 }
 
-/* エラーメッセージスタイル */
-.error-message {
-    color: #ef4444;
-    font-size: 14px;
-    margin-top: 8px;
-}
-
-/* 成功メッセージスタイル */
-.success-message {
-    color: #10b981;
-    font-size: 14px;
-    margin-top: 8px;
-}
-
 /* レスポンシブデザイン */
+/* General responsive adjustments are handled by Tailwind's breakpoint system (sm:, md:, etc.) */
+/* Keeping this empty or removing if no global responsive overrides are needed. */
 @media (max-width: 768px) {
-    .modal-content {
-        width: 95%;
-        margin: 5% auto;
-    }
-    
-    .table-header th {
-        font-size: 12px;
-    }
-    
-    .table-row td {
-        font-size: 12px;
-    }
-}
-
-/* カスタムセレクトボックス */
-.custom-select {
-    position: relative;
-    display: inline-block;
-    width: 100%;
-}
-
-.custom-select select {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #e5e7eb;
-    border-radius: 4px;
-    background-color: white;
-    appearance: none;
-    cursor: pointer;
-}
-
-.custom-select select:focus {
-    outline: none;
-    border-color: #3b82f6;
-}
-
-/* カスタムファイルインプット */
-.custom-file-input {
-    position: relative;
-    display: inline-block;
-    width: 100%;
-}
-
-.custom-file-input input[type="file"] {
-    display: none;
-}
-
-.custom-file-input label {
-    display: inline-block;
-    padding: 8px 16px;
-    background-color: #3b82f6;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.custom-file-input label:hover {
-    background-color: #2563eb;
+    /* Example: body { font-size: 14px; } */
+    /* Currently, no global overrides needed here as Tailwind handles responsiveness. */
 }
 
 /* カスタムスクロールバー */
+/* These are global and generally fine to keep if this specific scrollbar style is desired. */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -184,111 +51,6 @@
     background: #555;
 }
 
-/* カスタムチェックボックス */
-.custom-checkbox input[type="checkbox"] {
-    display: none;
-}
-
-.custom-checkbox label {
-    position: relative;
-    padding-left: 28px;
-    cursor: pointer;
-}
-
-.custom-checkbox label:before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 20px;
-    height: 20px;
-    border: 1px solid #e5e7eb;
-    border-radius: 4px;
-}
-
-.custom-checkbox input[type="checkbox"]:checked + label:before {
-    background-color: #3b82f6;
-    border-color: #3b82f6;
-}
-
-.custom-checkbox input[type="checkbox"]:checked + label:after {
-    content: "✓";
-    position: absolute;
-    left: 4px;
-    top: 2px;
-    color: white;
-    font-size: 16px;
-}
-
-/* カスタムラジオボタン */
-.custom-radio input[type="radio"] {
-    display: none;
-}
-
-.custom-radio label {
-    position: relative;
-    padding-left: 28px;
-    cursor: pointer;
-}
-
-.custom-radio label:before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 20px;
-    height: 20px;
-    border: 1px solid #e5e7eb;
-    border-radius: 50%;
-}
-
-.custom-radio input[type="radio"]:checked + label:before {
-    background-color: #3b82f6;
-    border-color: #3b82f6;
-}
-
-/* カスタムスイッチ */
-.custom-switch {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 34px;
-}
-
-.custom-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.custom-switch slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
-    border-radius: 34px;
-}
-
-.custom-switch slider:before {
-    position: absolute;
-    content: "";
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-}
-
-.custom-switch input:checked + slider {
-    background-color: #3b82f6;
-}
-
-.custom-switch input:checked + slider:before {
-    transform: translateX(26px);
-}
+/* Custom form element styles (select, file-input, checkbox, radio, switch) are removed */
+/* as the application primarily uses Tailwind for direct styling or browser defaults. */
+/* If specific custom form elements were consistently used, they could be kept or refactored. */
